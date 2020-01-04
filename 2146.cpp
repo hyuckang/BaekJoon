@@ -1,7 +1,3 @@
-/*
-    1. 연결요소 찾기
-    2. 섬의 가장자리에 다리만들기
-*/
 #include<iostream>
 #include<queue>
 #include<cstring>
@@ -38,19 +34,6 @@ void input()
             cin>>map[i][j][0];
         }
     }
-}
-void pr()
-{   
-    cout<<"dist_map\n";
-    for(int i=1; i<=N; i++)
-    {
-        for(int j=1; j<=N; j++)
-        {
-            cout<<dist_map[i][j]<<"\t";
-        }
-        cout<<"\n";
-    }
-    cout<<"bridge_min : "<<min_bridge<<"\n";
 }
 
 void solve()
@@ -97,46 +80,41 @@ void solve()
             while(!bridge_Q.empty())
             {
                 pair<int, int> cur = bridge_Q.front(); bridge_Q.pop();
+                
+                if(dist_map[cur.first][cur.second] > min_bridge) break;
+
                 for(int dir=0; dir<4; dir++)
                 {
                     int nx = cur.first + dx[dir];
                     int ny = cur.second + dy[dir];
                     if(nx<=0 || nx>N || ny<=0 || ny>N) continue;    // 범위를 벗어나는 경우
-                    if(map[nx][ny][1] && (map[i][j][1] == map[nx][ny][1])) continue;    // 같은 섬일경우
-                    if(dist_map[nx][ny] >= 0) continue;     // 이미 방문한 경우
-                    
+                    if(dist_map[nx][ny] >= 0) continue;             // 이미 방문한 경우
+                    if(map[nx][ny][0])
+                    {
+                        if(map[i][j][1] == map[nx][ny][1]) continue;    // 같은 섬인 경우
+                        else    // 새로운 섬을 찾은 경우
+                        {
+                            if(dist_map[cur.first][cur.second] < min_bridge)
+                            {
+                                min_bridge = dist_map[cur.first][cur.second];
+                                break;
+                            }
+                        }
+                    }
                     bridge_Q.push({nx, ny});
                     dist_map[nx][ny] = dist_map[cur.first][cur.second] + 1;
                     
-                    
-                    // 다른 섬을 찾은 경우
-                    if(map[nx][ny][0] != 0 && (map[i][j][1] != map[nx][ny][1])){
-                        cout<<"i : "<<i<<" j : "<<j<<"\n";
-                        cout<<"nx : "<<nx<<" ny : "<<ny<<"\n";
-                        
-                        /*
-                        if(dist_map[cur.first][cur.second] <= min_bridge){
-                            min_bridge = dist_map[cur.first][cur.second];
-                        }
-                        break;
-                        */
-                    }
-                    
                 }
-                
             }
-            pr();
-            getchar();
-            
         }
     }
+    // 정답 출력
+    cout<<min_bridge<<"\n";
 }
-
 
 int main()
 {
     input();
     solve();
-    // pr();
     return 0;
 }
