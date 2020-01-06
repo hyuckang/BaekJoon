@@ -16,38 +16,16 @@ int dx[] = {-1, 1, 0, 0};
 int dy[] = {0, 0, 1, -1};
 int cnt = 0;            // 몇 연쇄인지 저장
 
-void pr_map()
+void block_down()
 {
-    cout<<"map\n";
-    for(int i=1; i<13; i++)
-    {
-        for(int j=1; j<7; j++)
-        {
-            cout<<map[i][j];
-        }
-        cout<<"\n";
-    }
-}
-
-bool block_down()
-{
-    // 터질 블록이 있으면 터트리고, 터질블록이 없으면 false를 반환
-    bool down = false;
-    cout<<"cnt = "<<cnt<<"\n";
-    // 터질 블록이 있음, retrun true cnt++
     for(int i=1; i<7; i++)
     {
         for(int j=12; j>1; j--)
         {
             if(map[j][i] == '.' && map[j-1][i] != '.')
             {
-                cout<<"map[j][i] : "<<map[j][i]<<" map[j-1][i] : "<<map[j-1][i]<<"\n";
-                cout<<"i = "<<i<<" j = "<<j<<"\n";
                 swap(map[j][i], map[j-1][i]);
-                down = true;
-                pr_map();
-                getchar();
-                if(j<10)
+                if(j<=10)
                 {
                     j = j+2;
                 }
@@ -56,19 +34,9 @@ bool block_down()
                     j = 13;
                 }
                 else if(j==12) continue;
-                
             }
         }
     }
-    
-    if(down)
-    {
-        cnt++;
-        return down;
-    }
-    
-    // 터질블록이 없음
-    return down;
 }
 
 void input()
@@ -86,7 +54,8 @@ void solve()
 {
     while(true){
         memset(vist_map, false, sizeof(vist_map));
-        
+        bool pop = false;
+
         for(int i=1; i<=12; i++)
         {
             for(int j=1; j<=6; j++)
@@ -107,9 +76,8 @@ void solve()
                         int nx = cur.first + dx[dir];
                         int ny = cur.second + dy[dir];
                         if(nx<=0 || nx>=13 || ny<=0 || ny>=7) continue; // 범위 넘어가는지                        
-                        if(map[nx][ny] == '.') continue;                // .인지
-                        if(vist_map[nx][ny]) continue;                  // 방문했는지
-                        if(map[i][j] != map[nx][ny]) continue;          // 같은색의 블럭인지
+                        // .인지, 방문했는지, 같은색 블럭인지
+                        if(map[nx][ny] == '.'|| vist_map[nx][ny] || (map[i][j] != map[nx][ny])) continue;
                         
                         Q.push({nx, ny}); vist_map[nx][ny] = true;
                         puyo_vector.push_back({nx, ny});
@@ -121,24 +89,24 @@ void solve()
                 {
                     for(int i=0; i<puyo_vector.size(); i++)
                     {
-                        map[puyo_vector[i].first][puyo_vector[i].second] = '.';    
+                        map[puyo_vector[i].first][puyo_vector[i].second] = '.';
+                        pop = true;
                     }
                 }
                 
             }
         }
-        
-        cout<<"blcok_down_map\n";
-        pr_map();
-        cout<<"=========\n";
-        
-        // 블록 내리기, 블록을 내릴것이 없으면 끝
-        if(!block_down())
+
+        if(pop)
+        {
+            cnt++;
+            block_down();
+        }
+        else
         {
             break;
         }
-
-        // pr_map();
+        
     }
     cout<<cnt;
 }
@@ -146,7 +114,6 @@ void solve()
 int main()
 {
     input();
-    cout<<"=========\n";
     solve();
     return 0;
 }
