@@ -11,41 +11,6 @@ int dy[] = {0, 0, -1, 1};
 queue<pair<int, int>> fire_Q;
 queue<pair<int, int>> man_Q;
 
-void pr_map()
-{
-    cout<<"== map ==\n";
-    for(int i=0; i<h; i++)
-    {
-        for(int j=0; j<w; j++)
-        {
-            cout<<map[i][j];
-        }
-        cout<<"\n";
-    }
-}
-
-void pr_vist()
-{   
-    cout<<"==fire_vist==\n";
-    for(int i=0; i<h; i++)
-    {
-        for(int j=0; j<w; j++)
-        {
-            cout<<fire_vist[i][j]<<"\t";
-        }
-        cout<<"\n";
-    }
-    cout<<"\n";
-    cout<<"==man_vist==\n";
-    for(int i=0; i<h; i++)
-    {
-        for(int j=0; j<w; j++)
-        {
-            cout<<man_vist[i][j]<<"\t";
-        }
-        cout<<"\n";
-    }
-}
 void init()
 {
     while (!fire_Q.empty())
@@ -94,12 +59,10 @@ void solve()
             int ny = cur.second + dy[dir];
             if(nx<0 || nx>=h || ny<0 || ny>=w) continue;
             if(map[nx][ny] == '#' || fire_vist[nx][ny] >=0) continue;
-
             fire_Q.push({nx, ny});
             fire_vist[nx][ny] = fire_vist[cur.first][cur.second] + 1;
         }
     }
-
     // man bfs
     while(!man_Q.empty())
     {
@@ -118,16 +81,13 @@ void solve()
             if(map[nx][ny] == '#' || man_vist[nx][ny] >=0) continue;
             // compare fire, man
             if(fire_vist[nx][ny] != -1 && fire_vist[nx][ny] <= man_vist[cur.first][cur.second] + 1) continue;
-
             man_Q.push({nx, ny});
             man_vist[nx][ny] = man_vist[cur.first][cur.second] + 1;
         }
-
     }
-    
     cout<<"IMPOSSIBLE\n";
-    
 }
+
 int main()
 {
     cin>>T;
@@ -136,8 +96,6 @@ int main()
         init();
         input();
         solve();
-        pr_vist();
     }
-    
     return 0;
 }
