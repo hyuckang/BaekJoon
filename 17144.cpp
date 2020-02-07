@@ -10,21 +10,6 @@ int dx[] = {-1, 1, 0, 0};
 int dy[] = {0, 0, -1, 1};
 int air_condition_row;
 
-
-void pr_map()
-{
-    cout<<"== map ==\n";
-    for(int i=1; i<=R; i++)
-    {
-        for(int j=1; j<=C; j++)
-        {
-            cout<<map[i][j]<<" ";
-        }
-        cout<<"\n";
-    }
-
-}
-
 void go_dust(int r, int c)
 {
     int dust = map[r][c] / 5;
@@ -101,6 +86,7 @@ void go_wind(int r, int c)
         }
     }
 } 
+
 void input()
 {
     cin>>R>>C>>T;    
@@ -174,12 +160,9 @@ void solve()
                 }
             }
         }
-        cout<<"dust ";
-        pr_map();
 
         memcpy(map, wind_map, sizeof(wind_map));
-        cout<<"wind ";
-        pr_map();
+
     }
 
     dust_cnt = 0;
