@@ -104,22 +104,14 @@ void input()
             cin>>map[r][c];
         }
     }
-
-    // robot_r = start_r, robot_c = start_c, robot_dir = start_dir;
 }
 
 void solve()
 {
-    // 0 : 왼쪽 청소 가능, 1 : 왼쪽 청소 불가능
-    // 2 : 4방향 모두 청소 불가능, 3 : 4방향 모두 청소 불가능 & 후진 불가능
     clean(robot_r, robot_c);
     while(true)
     {
         int check_val = check(robot_r, robot_c, robot_dir);
-
-        // cout<<"robot_r : "<<robot_r<<" robot_c : "<<robot_c<<" robot_dir : "<<robot_dir<<"\n";
-        // cout<<"check_val : "<<check_val<<"\n\n";
-        
         if(check_val == 0)
         {
             change_dir();
