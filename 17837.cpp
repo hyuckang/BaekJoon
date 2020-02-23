@@ -14,11 +14,7 @@ typedef struct
 int N, K;   // 4 <= K <= 10
 int map[13][13];
 H horses[11];
-
-vector< vector<int> > map_horse(13, vector<int>(13));
-// vector< vector<int> > map_horse;
-
-
+vector<int> map_horse[13][13];
 
 int cnt;    // 턴의 번호
 int dr[] = {0, 0, 0, -1, 1};
@@ -47,10 +43,13 @@ int go_check_hosre(int k)
     if(horse_flag == 0)
     {
         // 이동하려는 칸이 White
+        
     }
     else if(horse_flag == 1)
     {
         // 이동하려는 칸이 Red
+
+        
     }
     else if(horse_flag == 2)
     {
@@ -80,8 +79,7 @@ void input()
 
     for(int i=1; i<=K; i++)
     {
-        
-        
+        map_horse[horses[i].r][horses[i].c].push_back(i);
     }
 }
 
@@ -96,7 +94,6 @@ void solve()
     for(int i=1; i<=K; i++)
     {    
         go_check_hosre(i);  // i번째 말이 이동검사
-        // 말 이동, go_check_horse( k )
     }
     
     // 종료 체크
