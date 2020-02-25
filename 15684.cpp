@@ -37,13 +37,15 @@ bool check_sadari()
 
 void go(int r, int c, int cnt)
 {
+    // check_sadari 를 먼저 할 경우 cnt가 4일 경우가 res에 들어갈 수 있음
     if(4 <= cnt)
     {
         return;
     }
-
+    
     if(check_sadari())
-    {
+    {   
+        // 사다리의 최솟값을 구하는 것이기 때문에 비교해주어야 함
         if(cnt < res)
         {
             res = cnt;
@@ -53,7 +55,7 @@ void go(int r, int c, int cnt)
 
     for(int i=r; i<=H; i++)
     {
-		// 마지막 열은 사다리를 놓을수 없기 때문에 j는 N-1까지
+	// 마지막 열은 사다리를 놓을수 없기 때문에 j는 N-1까지
         for(int j=c; j<N; j++)
         {
             if(map[i][j] == 1 || map[i][j] == -1) continue;
