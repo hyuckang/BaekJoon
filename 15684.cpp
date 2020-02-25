@@ -1,23 +1,9 @@
 #include<iostream>
-
 using namespace std;
-
 int N, M, H;
-int map[11][31];
+int map[31][11];
 int res = 987654321;
 
-void pr_map()
-{
-    
-    for(int i=1; i<=H; i++)
-    {
-        for(int j=1; j<=N; j++)
-        {
-            cout<<map[i][j]<<"\t";
-        }
-        cout<<"\n";
-    }
-}
 bool can_make_sadari(int r, int c)
 {
     if(map[r][c] == 0 && map[r][c+1] == 0)
@@ -26,13 +12,12 @@ bool can_make_sadari(int r, int c)
     }
     return false;
 }
+
 bool check_sadari()
 {
-    // 그대로 내려가면 return true
-    // 그대로 내려가지 않으면 return false
+    // 그대로 내려가면 true, 그렇지 않으면 false
     for(int i=1; i<=N; i++)
     {
-        // cout<<i<<" -> ";
         int c = i;
         for(int r=1; r<=H; r++)
         {
@@ -42,8 +27,6 @@ bool check_sadari()
                 c = c + map[r][c];
             }
         }
-        // cout<<c<<"\n";
-
         if(i != c)
         {
             return false;
@@ -54,19 +37,23 @@ bool check_sadari()
 
 void go(int r, int c, int cnt)
 {
-    if(check_sadari())
-    {
-        res = cnt;
-        return;
-    }
-
     if(4 <= cnt)
     {
         return;
     }
 
+    if(check_sadari())
+    {
+        if(cnt < res)
+        {
+            res = cnt;
+        }
+        return;
+    }
+
     for(int i=r; i<=H; i++)
     {
+		// 마지막 열은 사다리를 놓을수 없기 때문에 j는 N-1까지
         for(int j=c; j<N; j++)
         {
             if(map[i][j] == 1 || map[i][j] == -1) continue;
@@ -74,14 +61,12 @@ void go(int r, int c, int cnt)
             {
                 map[i][j] = 1;
                 map[i][j+1] = -1;
-                cout<<"make_sadari : "<<i<<" "<<j<<"\n";
                 go(i, j, cnt+1);
-                cout<<"remove_sadari : "<<i<<" "<<j<<"\n";
                 map[i][j] = 0;
                 map[i][j+1] = 0;
             }
         }
-        c = 0;
+        c = 1;
     }
 }
 
@@ -95,13 +80,11 @@ void input()
         map[a][b] = 1;
         map[a][b+1] = -1;
     }
-
 }
 
 void solve()
 {
     go(1, 1, 0);
-
     if(res != 987654321)
     {
         cout<<res<<"\n";
@@ -110,9 +93,7 @@ void solve()
     {
         cout<<"-1\n";
     }
-
 }
-
 
 int main()
 {
