@@ -15,10 +15,11 @@ int calc_safe_area()
     memset(vist, -1, sizeof(vist));
 
     queue<pair<int, int>> viruss_Q;
-    size_t viruss_cnt = viruss.size();
-    for(size_t i=0; i<viruss_cnt; i++)
+    size_t virus_cnt = viruss.size();
+    for(size_t i=0; i<virus_cnt; i++)
     {
         viruss_Q.push({viruss[i].first, viruss[i].second});
+        vist[viruss[i].first][viruss[i].second] = 0;
     }
 
     while(!viruss_Q.empty())
@@ -62,17 +63,18 @@ void make_wall(int r, int c, int cnt)
     if(cnt == 3)
     {
         int calc_safe_area_res = calc_safe_area();
-        if(calc_safe_area_res < safe_area)
+        if(calc_safe_area_res > safe_area)
         {
             safe_area = calc_safe_area_res;
         }
         return;
     }
 
-    for(int i=r; r<=N; r++)
+    for(int i=r; i<=N; i++)
     {
         for(int j=c; j<=M; j++)
         {
+            
             if(map[i][j] == 0)
             {
                 map[i][j] = 1;
