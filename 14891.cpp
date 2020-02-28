@@ -1,16 +1,18 @@
 #include<iostream>
 #include<string>
-
 using namespace std;
 
 string wheel[5];
 int K;
-int rot[2][100], wheel_12[5];
+int rot[2][100];
+int wheel_12[5] = {-1, 0, 0, 0, 0};
 int wheel_right[5] = {-1, 2, 2, 2, 2};
 int wheel_left[5] = {-1, 6, 6, 6, 6};
 
 void rotation(int wheel_num, int dir)
 {
+    // wheel_num : 회전시킬 바퀴의 번호
+    // dir : 회전시킬 방향
     // 바퀴 번호와 방향을 받아 바퀴를 회전시켜준다.
     if(dir == 1)
     {
@@ -77,14 +79,15 @@ void rotation(int wheel_num, int dir)
 
 int check_wheel(int wheel_1, int wheel_2, int wheel_1_dir)
 {
-    // wheel_num_1 : 회전 된 바퀴
-    // wheel_num_2 : 회전 여부를 결정할 바퀴
+    // wheel_1 : 회전 된 바퀴
+    // wheel_2 : 회전 여부를 결정할 바퀴
+    // wheel_1_dir : whee_1 바퀴가 회전한 방향
     // wheel_num_2 가 회전한다면 회전 방향(-1, 1), 하지 않는다면 0
 
     if(wheel_1 < wheel_2)
     {   
-        if(wheel_right[wheel_1] == wheel_left[wheel_2])
-        {   // (1,2) (2,3)
+        if(wheel[wheel_1][wheel_right[wheel_1]] == wheel[wheel_2][wheel_left[wheel_2]])
+        {   // (1,2) (2,3) (3,4)
             return 0;
         }
         else
@@ -104,8 +107,8 @@ int check_wheel(int wheel_1, int wheel_2, int wheel_1_dir)
     }
     else // wheel_num_1 > wheel_num_2
     {   
-        if(wheel_left[wheel_1] == wheel_right[wheel_2])
-        {   // (2,1) (4,3)
+        if(wheel[wheel_1][wheel_left[wheel_1]] == wheel[wheel_2][wheel_right[wheel_2]])
+        {   // (4,3) (3,2) (2,1)
             return 0;
         }
         else
@@ -152,7 +155,7 @@ void solve()
                 int res_3 = check_wheel(2, 3, res_2);
                 if(res_3 != 0)
                 {
-                    check_wheel(3, 4, res_3);
+                    int res_4 = check_wheel(3, 4, res_3);
                 }
             } 
         }
@@ -191,16 +194,17 @@ void solve()
                 int res_2 = check_wheel(3, 2, res_3);
                 if(res_2 != 0)
                 {
-                    check_wheel(2, 1, res_2);
+                    int res_1 = check_wheel(2, 1, res_2);
                 }
             }
         }
+        
     }
 
+    cout<<"out\n";
     for(int i=1; i<=4; i++)
     {
         cout<<i<<"_12 : "<<wheel_12[i]<<"\n";
-        
     }
     
  
