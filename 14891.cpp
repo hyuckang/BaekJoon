@@ -4,127 +4,64 @@ using namespace std;
 
 string wheel[5];
 int K;
-int rot[2][100];
-int wheel_12[5] = {-1, 0, 0, 0, 0};
-int wheel_right[5] = {-1, 2, 2, 2, 2};
-int wheel_left[5] = {-1, 6, 6, 6, 6};
 
-void rotation(int wheel_num, int dir)
+void pr_map()
 {
-    // wheel_num : 회전시킬 바퀴의 번호
-    // dir : 회전시킬 방향
-    // 바퀴 번호와 방향을 받아 바퀴를 회전시켜준다.
-    if(dir == 1)
+    cout<<"=== map ===\n";
+    for(int i=1; i<=4; i++)
     {
-        // 시계 회전
-        if(wheel_12[wheel_num] == 0)
-        {
-            wheel_12[wheel_num] = 7;
-        }
-        else
-        {
-            wheel_12[wheel_num]--;
-        }
-
-        if(wheel_left[wheel_num] == 0)
-        {
-            wheel_left[wheel_num] = 7;
-        }
-        else
-        {
-            wheel_left[wheel_num]--;
-        }
-        
-        if(wheel_right[wheel_num] == 0)
-        {
-            wheel_right[wheel_num] = 7;
-        }
-        else
-        {
-            wheel_right[wheel_num]--;
-        }
+        cout<<wheel[i]<<"\n";
     }
-    else if(dir == -1)
-    {
-        // 반시계 회전
-        if(wheel_12[wheel_num] == 7)
-        {
-            wheel_12[wheel_num] == 0;
-        }
-        else
-        {
-            wheel_12[wheel_num]++;
-        }
-
-        if(wheel_left[wheel_num] == 7)
-        {
-            wheel_left[wheel_num] = 0;
-        }
-        else
-        {
-            wheel_left[wheel_num]++;
-        }
-        
-        if(wheel_right[wheel_num] == 7)
-        {
-            wheel_right[wheel_num] = 0;
-        }
-        else
-        {
-            wheel_right[wheel_num]++;
-        }
-        
-    }
+    cout<<"===========\n";
 }
 
-int check_wheel(int wheel_1, int wheel_2, int wheel_1_dir)
+int check_rotation(int wheel_1, int wheel_2, int wheel_1_dir)
 {
-    // wheel_1 : 회전 된 바퀴
-    // wheel_2 : 회전 여부를 결정할 바퀴
-    // wheel_1_dir : whee_1 바퀴가 회전한 방향
-    // wheel_num_2 가 회전한다면 회전 방향(-1, 1), 하지 않는다면 0
-
+    // wheel_1로 인해서 wheel_2가 돌아가야하는지 검사
+    // 돌아가야 한다면 wheel_1_dir * -1를 반환
+    // 돌아가지 않아도 된다면 0을 반환
+    int wheel_1_cmp, wheel_2_cmp;
     if(wheel_1 < wheel_2)
-    {   
-        if(wheel[wheel_1][wheel_right[wheel_1]] == wheel[wheel_2][wheel_left[wheel_2]])
-        {   // (1,2) (2,3) (3,4)
-            return 0;
-        }
-        else
-        {
-            if(wheel_1_dir == 1)
-            {
-                rotation(wheel_2, -1);
-                return -1;
-            }
-            else // wheel_1_dir == -1
-            {
-                rotation(wheel_2, 1);
-                return 1;
-            }
-        }
-        
+    {   // (1,2) (2,3) (3,4)
+        wheel_1_cmp = 2;
+        wheel_2_cmp = 6;
     }
-    else // wheel_num_1 > wheel_num_2
-    {   
-        if(wheel[wheel_1][wheel_left[wheel_1]] == wheel[wheel_2][wheel_right[wheel_2]])
-        {   // (4,3) (3,2) (2,1)
-            return 0;
-        }
-        else
+    else// wheel_1 > wheel_2
+    {   // (4,3) (3,2) (2,1)
+        wheel_1_cmp = 6;
+        wheel_2_cmp = 2;
+    }
+
+    if(wheel[wheel_1][wheel_1_cmp] != wheel[wheel_2][wheel_2_cmp])
+    {   // wheel_2가 회전해야함
+        return wheel_1_dir * -1;
+    }
+    else
+    {   // wheel_2가 회전하지 않아도 됨
+        return 0;
+    }
+    
+}
+void rotation(int wheel_num, int dir)
+{
+    if(dir == 1)
+    {   // 시계 회전
+        char tmp = wheel[wheel_num][7];
+        for(int i=6; i>=0; i--)
         {
-            if(wheel_1_dir == 1)
-            {
-                rotation(wheel_2, -1);
-                return -1;
-            }
-            else // wheel_1_dir == -1
-            {
-                rotation(wheel_2, 1);
-                return 1;
-            }
+            wheel[wheel_num][i+1] = wheel[wheel_num][i];
         }
-    }   
+        wheel[wheel_num][0] = tmp;
+    }
+    else if(dir == -1)// dir == -1
+    {   // 반시계 회전
+        char tmp = wheel[wheel_num][0];
+        for(int i=1; i<=7; i++)
+        {
+            wheel[wheel_num][i-1] = wheel[wheel_num][i];
+        }
+        wheel[wheel_num][7] = tmp;
+    }
 }
 
 void input()
@@ -134,86 +71,119 @@ void input()
         cin>>wheel[i];
     }
     cin>>K;
-    for(int i=0; i<K; i++)
-    {
-        cin>>rot[0][i]>>rot[1][i];
-    }
 }
 
 void solve()
 {
-    for(int k=0; k<K; k++)
+    while(K--)
     {
-        if(rot[0][k] == 1)
+        int num, dir;
+        cin>>num>>dir;
+        rotation(num, dir);
+        
+        if(num == 1)
         {
-            rotation(1, rot[1][k]);
-
-            int res_2 = check_wheel(1, 2, rot[1][k]);
-            
+            int res_2 = check_rotation(1, 2, dir);
             if(res_2 != 0)
             {
-                int res_3 = check_wheel(2, 3, res_2);
+                rotation(2, res_2);
+                int res_3 = check_rotation(2, 3, res_2);
                 if(res_3 != 0)
                 {
-                    int res_4 = check_wheel(3, 4, res_3);
+                    rotation(3, res_3);
+                    int res_4 = check_rotation(3, 4, res_3);
+                    if(res_4 != 0)
+                    {
+                        rotation(4, res_4);
+                    }
                 }
-            } 
-        }
-
-        else if (rot[0][k] == 2)
-        {
-            rotation(2, rot[1][k]);
-            int res_1 = check_wheel(2, 1, rot[1][k]);
-
-            int res_3 = check_wheel(2, 3, rot[1][k]);
-            if(res_3 != 0)
-            {
-                int res_4 = check_wheel(3, 4, res_3);
             }
         }
-
-        else if (rot[0][k] == 3)
+        else if (num == 2)
         {
-            rotation(3, rot[1][k]);
-            int res_2 = check_wheel(3, 2, rot[1][k]);
-            
+            int res_1 = check_rotation(2, 1, dir);
+            if(res_1 != 0)
+            {
+                rotation(1, res_1);
+            }
+
+            int res_3 = check_rotation(2, 3, dir);
+            if(res_3 != 0)
+            {
+                rotation(3, res_3);
+                int res_4 = check_rotation(3, 4, res_3);
+                if(res_4 != 0)
+                {
+                    rotation(4, res_4);
+                }
+            }
+        }
+        else if(num == 3)
+        {
+            int res_2 = check_rotation(3, 2, dir);
             if(res_2 != 0)
             {
-                int res_1 = check_wheel(2, 1, res_2);
+                rotation(2, res_2);
+                int res_1 = check_rotation(2, 1, res_2);
+                if(res_1 != 0)
+                {
+                    rotation(1, res_1);
+                }
             }
 
-            int res_4 = check_wheel(3, 4, rot[1][k]);
+            int res_4 = check_rotation(3, 4, dir);
+            if(res_4 != 0)
+            {
+                rotation(4, res_4);
+            }
         }
-
-        else // rot[0][k] == 4
+        else // num == 4
         {
-            rotation(4, rot[1][k]);
-            int res_3 = check_wheel(4, 3, rot[1][k]);
+            int res_3 = check_rotation(4, 3, dir);
             if(res_3 != 0)
             {
-                int res_2 = check_wheel(3, 2, res_3);
+                rotation(3, res_3);
+                int res_2 = check_rotation(3, 2, res_3);
                 if(res_2 != 0)
                 {
-                    int res_1 = check_wheel(2, 1, res_2);
+                    rotation(2, res_2);
+                    int res_1 = check_rotation(2, 1, res_2);
+                    if(res_1 != 0)
+                    {
+                        rotation(1, res_1);
+                    }
                 }
             }
         }
-        
     }
 
-    cout<<"out\n";
-    for(int i=1; i<=4; i++)
-    {
-        cout<<i<<"_12 : "<<wheel_12[i]<<"\n";
-    }
+    // 점수 계산
     
- 
-    return;
+    int res = 0;
+
+    if(wheel[1][0] == '1')
+    {
+        res = res + 1;
+    }
+    if(wheel[2][0] == '1')
+    {
+        res = res + 2;
+    }
+    if(wheel[3][0] == '1')
+    {
+        res = res + 4;
+    }
+    if(wheel[4][0] == '1')
+    {
+        res = res + 8;
+    }
+    cout<<res<<"\n";
 }
 
 int main()
 {
     input();
     solve();
+    pr_map();
     return 0;
 }
