@@ -1,10 +1,8 @@
 #include<iostream>
 #include<string>
 using namespace std;
-
 string wheel[5];
 int K;
-
 void pr_map()
 {
     cout<<"=== map ===\n";
@@ -14,24 +12,22 @@ void pr_map()
     }
     cout<<"===========\n";
 }
-
 int check_rotation(int wheel_1, int wheel_2, int wheel_1_dir)
 {
     // wheel_1로 인해서 wheel_2가 돌아가야하는지 검사
     // 돌아가야 한다면 wheel_1_dir * -1를 반환
     // 돌아가지 않아도 된다면 0을 반환
     int wheel_1_cmp, wheel_2_cmp;
-    if(wheel_1 < wheel_2)
-    {   // (1,2) (2,3) (3,4)
+    if(wheel_1 < wheel_2) // (1,2) (2,3) (3,4)
+    {   
         wheel_1_cmp = 2;
         wheel_2_cmp = 6;
     }
-    else// wheel_1 > wheel_2
-    {   // (4,3) (3,2) (2,1)
+    else// wheel_1 > wheel_2, (4,3) (3,2) (2,1)
+    {   
         wheel_1_cmp = 6;
         wheel_2_cmp = 2;
     }
-
     if(wheel[wheel_1][wheel_1_cmp] != wheel[wheel_2][wheel_2_cmp])
     {   // wheel_2가 회전해야함
         return wheel_1_dir * -1;
@@ -63,7 +59,6 @@ void rotation(int wheel_num, int dir)
         wheel[wheel_num][7] = tmp;
     }
 }
-
 void input()
 {
     for(int i=1; i<=4; i++)
@@ -72,7 +67,6 @@ void input()
     }
     cin>>K;
 }
-
 void solve()
 {
     while(K--)
@@ -82,7 +76,7 @@ void solve()
         rotation(num, dir);
         
         if(num == 1)
-        {
+        {   // 1->2->3->4
             int res_2 = check_rotation(1, 2, dir);
             if(res_2 != 0)
             {
@@ -100,13 +94,13 @@ void solve()
             }
         }
         else if (num == 2)
-        {
+        {   // 2->1
             int res_1 = check_rotation(2, 1, dir);
             if(res_1 != 0)
             {
                 rotation(1, res_1);
             }
-
+            // 2->3->4
             int res_3 = check_rotation(2, 3, dir);
             if(res_3 != 0)
             {
@@ -120,6 +114,7 @@ void solve()
         }
         else if(num == 3)
         {
+            // 3->2->1
             int res_2 = check_rotation(3, 2, dir);
             if(res_2 != 0)
             {
@@ -130,15 +125,16 @@ void solve()
                     rotation(1, res_1);
                 }
             }
-
+            // 3->4
             int res_4 = check_rotation(3, 4, dir);
             if(res_4 != 0)
             {
                 rotation(4, res_4);
             }
         }
-        else // num == 4
+        else if(num == 4) 
         {
+            // 4->3->2->1
             int res_3 = check_rotation(4, 3, dir);
             if(res_3 != 0)
             {
@@ -156,11 +152,9 @@ void solve()
             }
         }
     }
-
-    // 점수 계산
     
+    // 점수 계산
     int res = 0;
-
     if(wheel[1][0] == '1')
     {
         res = res + 1;
@@ -178,8 +172,8 @@ void solve()
         res = res + 8;
     }
     cout<<res<<"\n";
+    
 }
-
 int main()
 {
     input();
