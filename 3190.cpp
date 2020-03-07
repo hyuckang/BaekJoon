@@ -1,137 +1,84 @@
 #include<iostream>
+#include<queue>
 #include<vector>
+#include<tuple>
 using namespace std;
 
-int N, K, L, time, legth;
-int map[111][111];  // 0:빈칸, 1:사과
-int sneak_map[111][111];
-int dr[] = {-1, 0, 1, 0};
+int N, K, L, time;
+int map[111][111];  // 1: 뱀, 2: 사과
+int dr[] = {-1, 0, 1, 0};   // 0:북, 1:동, 2:남, 3:서
 int dc[] = {0, 1, 0, -1};
 vector<pair<int, char>> time_dir;
 typedef struct
-{   // 0:북, 1:동, 2:남, 3:서
+{
     int r;
     int c;
     int dir;
 }sneak;
-sneak head;
-sneak tail;
-void pr_map();
-void pr_sneak();
 void input();
-void change_dir(char dir_type);
-
-
-int go_head()
-{
-    head.r = head.r + dr[head.dir];
-    head.c = head.c + dc[head.dir];
-    if(head.r <= 0 || head.r > N || head.c <= 0 || head.c > N)
-    {   // 벽에 닿음, 종료
-        return -1;
-    }
-    if(sneak_map[head.r][head.c] == 1)
-    {   // 자신 몸에 닿음, 종료
-        return -1;
-    }
-
-    if(map[head.r][head.c] == 1)
-    {   // 사과 먹음
-        sneak_map[head.r][head.c] = 1;
-        return 1;
-    }
-    
-    // 종료되지 않고, 사과 먹지 않음
-    // 꼬리 이동해야함
-    return 0;
-}
-
-void go_tail()
-{
-    sneak_map[tail.r][tail.c] = 0;
-    tail.r = tail.r + dr[tail.dir];
-    tail.c = tail.c + dc[tail.dir];
-    sneak_map[tail.r][tail.c] = 1;
-}
+void solve();
+int change_dir(int, char);
+void pr_sneak();
 
 void solve()
-{   
+{
+    // 꼬리를 저장하는 Q, (행, 열, 방향)으로 저장
+    queue<tuple<int, int, int>> Q;
+    map[1][1] = 1;
+    Q.push(make_tuple(1, 1, 1));
+    sneak head;
     head.r = 1, head.c = 1, head.dir = 1;
-    tail.r = 1, tail.c = 1, tail.dir = 1;
-    sneak_map[1][1] = 1;
-    int check_time = 0;
+    int time_idx = 0;
+    pr_sneak();
     while(true)
     {
         time++;
-        // 몸길이 늘려, 머리를 다음칸으로 이동
-        // go_head 결과가 1 이라면 꼬리 움직이지 않는다.
-        // go_head 결과가 0 이라면 꼬리또한 움직인다. go_tail();
-        // go_head 결과가 -1 이라면 게임 종료
-        int go_head_res = go_head();
-        if(go_head_res == -1)
-        {
+        int next_r = head.r + dr[head.dir];
+        int next_c = head.c + dc[head.dir];
+
+        cout<<"11111\n";
+        cout<<next_r<<" "<<next_c<<"\n";
+        // 종료조건 -> 벽에 닿거나, 몸에 닿음
+        if(next_r<=0 || next_r>N || next_c<=0 || next_c >N || map[next_r][next_c] == 1)
+        {   
             break;
         }
-        else if(go_head_res == 0)
-        {
-            go_tail();
-        }
-        else if(go_head_res == 1)
-        {
-            continue;
-        }
-        //pr_sneak();
-        //getchar();
-
-        // 머리 방향 검사
-        if(time_dir[check_time].first == time)
-        {  
-            //cout<<"change_dir, time : "<<time<<"\n";
-            change_dir(time_dir[check_time].second);
-            check_time++;
-            //cout<<"head dir : "<<head.dir<<"\n";
-        }
-
-        // 꼬리 방향 검사
         
+        cout<<"22222\n";
 
+        // 방향 검사
+        if(time == time_dir[time_idx].first)
+        {
+            head.dir = change_dir(head.dir, time_dir[time_idx].second);
+            time_idx++;
+        }
+
+        // 사과 먹음 -> 꼬리 이동 없음
+        if(map[next_r][next_c] == 2)
+        {
+            map[next_r][next_c] = 1;
+            Q.push(make_tuple(next_r, next_c, head.dir));
+        }
+        // 사과 먹지 못함 -> 꼬리 이동
+        else
+        {
+            map[next_r][next_c] = 1;
+            Q.push(make_tuple(next_r, next_c, head.dir));
+            sneak tail;
+            tie(tail.r, tail.c, tail.dir) = Q.front();
+            Q.pop();
+            map[tail.r][tail.c] = 0;
+        }
+        
+        pr_sneak();
     }
     cout<<time<<"\n";
 }
-
 int main()
-{   
+{
     input();
-    //pr_map();
     solve();
-    
     return 0;
-}
-
-void pr_map()
-{
-    cout<<"=== map ===\n";
-    for(int i=1; i<=N; i++)
-    {
-        for(int j=1; j<=N; j++)
-        {
-            cout<<map[i][j]<<" ";
-        }
-        cout<<"\n";
-    }
-}
-
-void pr_sneak()
-{
-    cout<<"=== sneak ===\n";
-    for(int i=1; i<=N; i++)
-    {
-        for(int j=1; j<=N; j++)
-        {
-            cout<<sneak_map[i][j]<<" ";
-        }
-        cout<<"\n";
-    }
 }
 
 void input()
@@ -141,7 +88,7 @@ void input()
     {
         int r, c;
         cin>>r>>c;
-        map[r][c] = 1;
+        map[r][c] = 2;
     }
     cin>>L;
     for(int i=0; i<L; i++)
@@ -151,32 +98,43 @@ void input()
         cin>>X>>C;
         time_dir.push_back({X, C});
     }
-
 }
-void change_dir(char dir_type)
+
+int change_dir(int d, char type)
 {
-    // 왼쪽, L
-    if(dir_type == 'L')
+    if(type == 'L')
     {
-        if(head.dir == 0)
+        if(d == 0)
         {
-            head.dir = 3;
+            return 3;
         }
         else
         {
-            head.dir--;
+            return d-1;
         }
     }
-    // 오른쪽, R
-    else if(dir_type == 'D')
+    else // type == 'D'
     {
-        if(head.dir == 3)
+        if(d == 3)
         {
-            head.dir = 0;
+            return 0;
         }
         else
         {
-            head.dir++;
+            return d+1;
         }
+    }
+}
+
+void pr_sneak()
+{
+    cout<<"=== map ===\n";
+    for(int i=1; i<=N; i++)
+    {
+        for(int j=1; j<=N; j++)
+        {
+            cout<<map[i][j]<<" ";
+        }
+        cout<<"\n";
     }
 }
