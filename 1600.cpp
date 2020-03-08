@@ -4,16 +4,19 @@
 #include<cstring>
 using namespace std;
 int K, W, H;
-int res = 999999999;
-int map[201][201];
-int vist[201][201][30];  // 0: 거리, 1~31 : 말로 이동한 횟수
-int dx[] = {-1,1,0,0, -2,-2,2,2, -1,1,-1,1};
-int dy[] = {0,0,-1,1, -1,1,-1,1, -2,-2,2,2};
+int map[222][222];
+int vist[222][222][31];
+int dr[] = {-1, 1, 0, 0}, dc[] = {0, 0, -1, 1};
+int hr[] = {-2, -2, -1, -1, 1, 1, 2, 2};
+int hc[] = {-1, 1, -2, 2, -2, 2, -1, 1};
 
-void input_init()
+void init()
 {
-    cin>>K;
-    cin>>W>>H;
+    memset(vist, -1, sizeof(vist));
+}
+void input()
+{
+    cin>>K>>W>>H;
     for(int i=0; i<H; i++)
     {
         for(int j=0; j<W; j++)
@@ -21,58 +24,65 @@ void input_init()
             cin>>map[i][j];
         }
     }
-    memset(vist, -1, sizeof(vist));
 }
-void solve()
-{ 
+int solve()
+{   
     queue<tuple<int, int, int>> Q;
+    for(int i=0; i<K; i++)
+    {
+        vist[0][0][i] = 0;
+    }
     Q.push(make_tuple(0, 0, 0));
-    vist[0][0][0] = 0;
-
     while(!Q.empty())
     {
-        int cur_x, cur_y, horse;
-        tie(cur_x, cur_y, horse) = Q.front(); Q.pop();
-        if(cur_x == H-1 && cur_y == W-1)
+        int r, c, jump;
+        tie(r, c, jump) = Q.front(); Q.pop();
+        if(r == H-1 && c == W-1)
         {
-            res = min(res, vist[cur_x][cur_y][horse]);
+            return vist[r][c][jump];
         }
-        
-        for(int dir=0; dir<12; dir++)
+        for(int dir=0; dir<4; dir++)
+        {   // 그냥 이동
+            int nr = r + dr[dir];
+            int nc = c + dc[dir];
+            if(nr<0 || nr>=H || nc<0 || nc>=W)
+            {
+                continue;
+            }
+            if(map[nr][nc] || vist[nr][nc][jump] >= 0)
+            {
+                continue;
+            }
+            Q.push(make_tuple(nr, nc, jump));
+            vist[nr][nc][jump] = vist[r][c][jump] + 1;
+        }
+        if(jump < K)
         {
-            int nx = cur_x + dx[dir];
-            int ny = cur_y + dy[dir];
-            
-            if(nx<0 || nx>=H || ny<0 || ny>=W | map[nx][ny]) continue;
-            if(vist[nx][ny][horse] > -1) continue;
-            
-            if(dir<4)
-            {   // 그냥 가는 경우
-                Q.push(make_tuple(nx, ny, horse));
-                vist[nx][ny][horse] = vist[cur_x][cur_y][horse] + 1;
-            }
-            else if(dir>3 && horse+1<=K)
-            {   // 말처럼 가는 경우
-                Q.push(make_tuple(nx, ny, horse+1));
-                vist[nx][ny][horse+1] = vist[cur_x][cur_y][horse] + 1;
+            // 말처럼 이동
+            for(int dir=0; dir<8; dir++)
+            {   
+                int nr = r + hr[dir];
+                int nc = c + hc[dir];
+                if(nr<0 || nr>=H || nc<0 || nc>=W)
+                {
+                    continue;
+                }
+                if(map[nr][nc] || vist[nr][nc][jump+1] >= 0)
+                {
+                    continue;
+                }
+                Q.push(make_tuple(nr, nc, jump+1));
+                vist[nr][nc][jump+1] = vist[r][c][jump] + 1;
             }
         }
-        
     }
-
-    if(res == 999999999)
-    {
-        cout<<-1;
-    }
-    else
-    {
-        cout<<res;
-    }
-
+    return -1;
 }
+
 int main()
 {
-    input_init();
-    solve();
+    init();
+    input();
+    cout<<solve();
     return 0;
 }
