@@ -5,7 +5,7 @@
 using namespace std;
 int N, M;
 int virus_cnt, empty_cnt;
-int time, min_res = 0;
+int min_res = 987654321;
 int map[55][55], vist[55][55];
 int dr[] = {-1, 1, 0, 0}, dc[] = {0, 0, -1, 1};
 vector<pair<int, int>> viruss;
@@ -16,6 +16,7 @@ void pr_map();
 void pr_vist();
 void bfs()
 {
+    int time = 0, empty = 0;
     memset(vist, -1, sizeof(vist));
     queue<pair<int, int>> Q;
     for(int i=0; i<virus_cnt; i++)
@@ -26,22 +27,34 @@ void bfs()
             Q.push({viruss[i].first, viruss[i].second});
         }
     }
-    time = 0;
 
+    while(!Q.empty())
+    {
+        pair<int, int> cur = Q.front(); Q.pop();
+        time = max(time, vist[cur.first][cur.second]);
+        if(time > min_res)
+        {   // 이미 최소 시간을 넘어감
+            return;
+        }
+        for(int dir=0; dir<4; dir++)
+        {
+            int nr = cur.first + dr[dir];
+            int nc = cur.second + dc[dir];
+            if(nr<0 || nr>N || nc<0 || nc>N) continue;
+            if(map[nr][nc] == 1 || vist[nr][nc] >= 0) continue;
+            
+            Q.push({nr, nc});
+            vist[nr][nc] = vist[cur.first][cur.second] + 1;
+        }
+    }
 }
 void go(int cnt, int idx)
 {
-    if(idx > virus_cnt)
-    {
-        return;
-    }
+    if(idx > virus_cnt) return;
     
     if(cnt == M)
-    {
-        // M개 선택 -> bfs 호출
+    {   // M개 선택 -> bfs 호출
         bfs();
-        // pr_vist();
-        // getchar();
         return;
     }
 
@@ -53,7 +66,8 @@ void go(int cnt, int idx)
 int solve()
 {
     go(0, 0);
-    return -1;
+    if(min_res == 987654321) return min_res;
+    else return -1;
 }
 int main()
 {
