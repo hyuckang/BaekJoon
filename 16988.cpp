@@ -1,69 +1,74 @@
 #include<iostream>
+#include<cstring>
 #include<queue>
 using namespace std;
 int N, M;
 int map[22][22];
 int enemy_map[22][22];
 int enemy_cnt;
+bool vist[22][22];
 int max_res = 0;
 int dr[] = {-1, 1, 0, 0};
 int dc[] = {0, 0, -1, 1};
 void init();
 void input();
 void pr_map();
-void pr_enemy();
+void pr_vist();
 
-bool check_die(int r, int c)
-{   // (r, c) 돌이 빈칸과 맞닿아있지 않으면, 죽으면 false
-    // 빈칸과 맞닿아있으면, 살면 true
+bool is_die(int r, int c)
+{   // (r, c) 돌이 죽으면 true, 죽지 않으면 false
     for(int dir=0; dir<4; dir++)
     {
         int nr = r + dr[dir];
         int nc = c + dc[dir];
         if(nr<0 || nr>=N || nc<0 || nc>=M) continue;
-        if(map[nr][nc] == 0) return true;
+        if(map[nr][nc] == 0) return false;
     }
-    return false;
+    return true;
 }
-int kill(int num)
+
+
+int calc_bfs(int r, int c)
 {
-    // num 번째 상대 집합이 죽는 지 확인
-    int cnt = 0;
-    for(int i=0; i<N; i++)
+    int cnt = 1;    
+    queue<pair<int, int>> Q;
+    Q.push({r, c});
+    vist[r][c] = true;
+    while(!Q.empty())
     {
-        for(int j=0; j<M; j++)
+        pair<int, int> cur = Q.front(); Q.pop();
+        for(int dir=0; dir<4; dir++)
         {
-            if(enemy_map[i][j] != num) continue;
-            if(check_die(i, j)) return 0;
+            int nr = cur.first + dr[dir];
+            int nc = cur.second + dc[dir];
+            if(nr<0 || nr>=N || nc<0 || nc>=M) continue;
+            if(map[nr][nc] != 2 || vist[nr][nc]) continue;
+            vist[nr][nc] = true;
+            Q.push({nr, nc});
             cnt++;
+            if(!is_die(nr, nc)) return 0;
         }
     }
     return cnt;
 }
-void dfs(int r, int c, int cnt)
-{
-    enemy_map[r][c] = cnt;
-    for(int dir=0; dir<4; dir++)
-    {
-        int nr = r + dr[dir];
-        int nc = c + dc[dir];
-        if(nr<0 || nr>=N || nc<0 || nc>=M) continue;
-        if(map[nr][nc] != 2 || enemy_map[nr][nc] > 0) continue;
-        dfs(nr, nc, cnt);
-    }
-}
+
 
 void go(int r, int c, int cnt)
 {
     if(cnt == 2)
     {
-        pr_map();
-        // 죽이는 돌 계산
-        for(int i=1; i<=enemy_cnt; i++)
+        memset(vist, false, sizeof(vist));
+        for(int i=0; i<N; i++)
         {
-            int tmp = kill(i);
-            max_res = max(max_res, tmp);
-            cout<<"tmp = "<<tmp<<"\n";
+            for(int j=0; j<M; j++)
+            {
+                if(map[i][j] == 2 && vist[i][j] == false)
+                {
+                    int tmp = calc_bfs(i, j);
+                    max_res = max(max_res, tmp);
+                    // pr_vist();
+                }
+            }
         }
         return;
     }
@@ -83,6 +88,7 @@ void go(int r, int c, int cnt)
 }
 void solve()
 {
+    /*
     // 상대 돌의 집합 계산
     enemy_cnt = 1;
     for(int i=0; i<N; i++)
@@ -100,6 +106,8 @@ void solve()
     enemy_cnt--;
     cout<<"enemy cnt : "<<enemy_cnt<<"\n";
     pr_enemy();
+    */
+
 
     // 돌 2개 착수
     go(0, 0, 0);
@@ -136,14 +144,15 @@ void pr_map()
         cout<<"\n";
     }
 }
-void pr_enemy()
+void pr_vist()
 {
-    cout<<"=== enemy ===\n";
+    cout<<"=== vist ===\n";
     for(int i=0; i<N; i++)
     {
         for(int j=0; j<M; j++)
         {
-            cout<<enemy_map[i][j]<<" ";
+            if(vist[i][j]) cout<<"1 ";
+            else cout<<"0 ";
         }
         cout<<"\n";
     }
