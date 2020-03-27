@@ -1,26 +1,67 @@
+/*
+    1. 물고기 거리 계산 -> bfs
+    2. 먹을 물고기 선택
+    3. 먹고 시간계산, 상어 크기 확인, 상어 위치
+*/
 #include<iostream>
 #include<queue>
 #include<cstring>
 using namespace std;
-int N, M, time = 0;
-int map[30][30], vist[30][30];
-int dr[] = {-1, 1, 0, 0};
-int dc[] = {0, 0, -1, 1};
-typedef struct 
-{
-    int r, c, size, eat_fish;
-}fish;
-fish shark;
-void input();
-void pr_map();
-void pr_vist();
+
+int N, shark_r, shark_c, shark_size = 2, shark_eat = 0, res = 0;
+int map[25][25], vist[25][25];
+int dr[] = {-1, 1, 0, 0}, dc[] = {0, 0, -1, 1};
+
+bool is_eat()
+{   
+    // 먹을 물고기가 있다면 먹고 return true, 먹을 물고기가 없다면 return false
+    
+    // 먹을 물고기 찾기
+    int fish_r = -1, fish_c = -1, min_res = 987654321;
+    for(int i=0; i<N; i++)
+    {
+        for(int j=0; j<N; j++)
+        {
+            if(map[i][j] == 0 || vist[i][j] == -1) continue;    
+            if(map[i][j] >= shark_size || vist[i][j] == 0) continue;
+            if(min_res > vist[i][j])
+            {
+                min_res = vist[i][j];
+                fish_r = i;
+                fish_c = j;
+            }
+        }
+    }
+
+    // 물고기 먹기
+    if(fish_r == -1 && fish_c == -1)
+        return false;
+    else
+    {
+        // 시간 게산, 상어 크기 확인
+        res += vist[fish_r][fish_c];
+        shark_eat++;
+        if(shark_size == shark_eat)
+        {
+            shark_size++;
+            shark_eat = 0;
+        }
+
+        // 상어 위치 옮기기
+        map[shark_r][shark_c] = 0;
+        map[fish_r][fish_c] = 9;
+        shark_r = fish_r, shark_c = fish_c;
+
+        return true;
+    }
+
+}
 void bfs()
 {
-    // bfs, 물고기 거리 계산
     memset(vist, -1, sizeof(vist));
     queue<pair<int, int>> Q;
-    Q.push(make_pair(shark.r, shark.c));
-    vist[shark.r][shark.c] = 0;
+    vist[shark_r][shark_c] = 0;
+    Q.push(make_pair(shark_r, shark_c));
     while(!Q.empty())
     {
         pair<int, int> cur = Q.front(); Q.pop();
@@ -28,70 +69,21 @@ void bfs()
         {
             int nr = cur.first + dr[dir];
             int nc = cur.second + dc[dir];
-            if(nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
-            if(vist[nr][nc] >= 0 || map[nr][nc] > shark.size) continue;
-            Q.push(make_pair(nr, nc));
+            if(nr < 0 || nr >= N || nc <0 || nc >= N || vist[nr][nc] > -1) continue;
+            if(map[nr][nc] > shark_size) continue;
             vist[nr][nc] = vist[cur.first][cur.second] + 1;
+            Q.push(make_pair(nr, nc));
         }
     }
-}
-bool check_fish()
-{
-    // 물고기 선택
-    int fish_r = -1, fish_c = -1, fish_time = 987654321;
-    for(int i=0; i<N; i++)
-    {
-        for(int j=0; j<N; j++)
-        {
-            if(vist[i][j] == -1 || map[i][j] == 9) continue;
-            if(map[i][j] != 0 && vist[i][j] < fish_time)
-            {
-                fish_time = vist[i][j];
-                fish_r = i, fish_c = j;
-            }
-        }
-    }
-    if(fish_r == -1 && fish_c == -1) return false;
-
-    cout<<"=======\n";
-    cout<<"fish_r "<<fish_r<<", fish_c : "<<fish_c<<"\n";
-    
-    // 시간 더하기
-    time += vist[fish_r][fish_c];
-    if(map[fish_r][fish_c] == shark.size) shark.eat_fish++;
-
-    // 상어 맵에 그리기
-    map[shark.r][shark.c] = 0;
-    map[fish_r][fish_c] = 9;
-    shark.r = fish_r, shark.c = fish_c;
-    
-
-    // 상어 크기 확인
-    if(shark.size == shark.eat_fish)
-    {
-        shark.size++;
-        shark.eat_fish = 0;
-    }
-    return true;
 }
 void solve()
 {
     while(true)
     {
         bfs();
-        pr_vist();
-        if(!check_fish()) break;
-        pr_map();
-        cout<<"time = "<<time<<"\n";
-        cout<<"-----------------\n";
+        if(!is_eat()) break;
     }
-    cout<<time;
-}
-int main()
-{
-    input();
-    solve();
-    return 0;
+    cout<<res;
 }
 void input()
 {
@@ -103,37 +95,14 @@ void input()
             cin>>map[i][j];
             if(map[i][j] == 9)
             {
-                shark.r = i, shark.c = j, shark.size = 2, shark.eat_fish = 0;
-                
-            }
-            else if(map[i][j] > 0)
-            {
-                M++;
+                shark_r = i, shark_c = j;
             }
         }
     }
 }
-void pr_map()
+int main()
 {
-    cout<<"=== map ===\n";
-    for(int i=0; i<N; i++)
-    {
-        for(int j=0; j<N; j++)
-        {
-            cout<<map[i][j]<<" ";
-        }
-        cout<<"\n";
-    }
-}
-void pr_vist()
-{
-    cout<<"=== vist ===\n";
-    for(int i=0; i<N; i++)
-    {
-        for(int j=0; j<N; j++)
-        {
-            cout<<vist[i][j]<<" ";
-        }
-        cout<<"\n";
-    }
+    input();
+    solve();
+    return 0;
 }
