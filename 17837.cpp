@@ -1,66 +1,173 @@
 #include<iostream>
 #include<vector>
-#include<tuple>
+#include<stack>
+#include<queue>
 
 using namespace std;
-
-typedef struct 
+struct HORSE
 {
-    int r;
-    int c;
-    int dir;
-}H;
+    int r, c, dir;
+};
+int N, K, turn_res = 0;
+int map[15][15];
+int dr[] = {0, 0, 0 , -1, 1}, dc[] = {0, 1, -1, 0, 0};
+vector<int> H_map[15][15];
+HORSE H[15];
 
-int N, K;   // 4 <= K <= 10
-int map[13][13];
-H horses[11];
-vector<int> map_horse[13][13];
-
-int cnt;    // 턴의 번호
-int dr[] = {0, 0, 0, -1, 1};
-int dc[] = {0, 1, -1, 0, 0};
-
-
-int go_check_hosre(int k)
+void pr_map()
 {
-    // 말이 이동하려는 칸 체크하여 정수(int)를 돌려줌
-    int horse_flag = 0;
-    int nr = horses[k].r + dr[horses[k].dir];
-    int nc = horses[k].c + dc[horses[k].dir];
-    
-    
-    if(nr<=0 || nr>N || nc<=0 || nc>N)
+    cout<<"=== map ===\n";
+    for(int i=1; i<=N; i++)
     {
-        // 체스판을 벗어나는 경우 또한 Blue
-        horse_flag = 2;
+        for(int j=1; j<=N; j++)
+        {
+            cout<<H_map[i][j].size()<<" ";
+        }
+        cout<<"\n";
     }
-    else
-    {
-        horse_flag = map[nr][nc];
-    }
-    
-    
-    if(horse_flag == 0)
-    {
-        // 이동하려는 칸이 White
-        
-    }
-    else if(horse_flag == 1)
-    {
-        // 이동하려는 칸이 Red
-
-        
-    }
-    else if(horse_flag == 2)
-    {
-        // 이동하려는 칸이 Blue
-        
-    }
-
-    return 0;   
 }
 
+int change_dir(int dir)
+{
+    if(dir == 1) return 2;
+    else if(dir == 2) return 1;
+    else if(dir == 3) return 4;
+    else return 4;
+}
+int find_h_idx(int idx, int r, int c)
+{   
+    // idx 번째 말이 h_map[r][c]에서 몇번째에 위치했는지를 retrun
+    int H_idx;
+    int H_map_sz = H_map[r][c].size();
+    for(int i=0; i<H_map_sz; i++)
+    {
+        if(idx == H_map[r][c].at(i))
+        {
+            H_idx = i;
+            break;
+        }
+    }
+    return H_idx;
+}
+void pr_h_idx()
+{
+    cout<<"+++++++++++++++++\n";
+    for(int i=1; i<=K; i++)
+    {
+        cout<<H[i].r<<", "<<H[i].c<<", "<<H[i].dir<<"\n";
+    }
+    cout<<"+++++++++++++++++\n";
+}
+void move_horse(int idx)
+{
 
+    // cout<<idx<<" horse\n";
+    // cout<<"cur_r : "<<H[idx].r<<", cur_c : "<<H[idx].c<<"\n";
+    // 맵을 벗어남, 흰색, 빨간색 : return 1
+    // 파란색 return 0
+
+    int cur_r = H[idx].r, cur_c = H[idx].c;
+    int nr = cur_r + dr[H[idx].dir];
+    int nc = cur_c + dc[H[idx].dir];
+
+    // 맵을 벗어남
+    if(nr <= 0 || nr > N || nc <= 0 || nc >N)
+    {
+        H[idx].dir = change_dir(H[idx].dir);
+        return;
+    }
+
+    // idx 번째 말 위의 말들과 함께 움직이기 위함
+    int H_idx = find_h_idx(idx, cur_r, cur_c);
+    int H_map_sz = H_map[cur_r][cur_c].size();
+    
+    // 흰색
+    if(map[nr][nc] == 0)
+    {
+        stack<int> S;
+        for(int i=H_map_sz-1; i>=H_idx; i--)
+        {
+            S.push(H_map[cur_r][cur_c].at(i));
+            
+            int tmp_r = H[idx].r, tmp_c = H[idx].c;
+            H[H_map[tmp_r][tmp_c].at(i)].r = nr;
+            H[H_map[tmp_r][tmp_c].at(i)].c = nc;
+            
+            H_map[cur_r][cur_c].pop_back();
+        }
+        while(!S.empty())
+        {
+            H_map[nr][nc].push_back(S.top());
+            S.pop();
+        }
+    }
+    // 빨간색
+    else if(map[nr][nc] == 1)
+    {
+        queue<int> Q;
+        for(int i=H_map_sz-1; i>=H_idx; i--)
+        {
+            Q.push(H_map[cur_r][cur_c].at(i));
+
+            int tmp_r = H[idx].r, tmp_c = H[idx].c;
+            H[H_map[tmp_r][tmp_c].at(i)].r = nr;
+            H[H_map[tmp_r][tmp_c].at(i)].c = nc;
+            
+            H_map[cur_r][cur_c].pop_back();
+        }
+        while(!Q.empty())
+        {
+            H_map[nr][nc].push_back(Q.front());
+            Q.pop();
+        }
+    }
+    // 파란색
+    else
+    {
+        H[idx].dir = change_dir(H[idx].dir);
+        int nnr = cur_r + dr[H[idx].dir];
+        int nnc = cur_c + dc[H[idx].dir];
+        if(nnr <= 0 || nnr > N || nnc <= 0 || nnc > N) return;
+        if(map[nnr][nnc] != 2) move_horse(idx);
+    }
+    return;
+}
+void solve()
+{
+    while(true)
+    {
+        // 말 이동
+        for(int k=1; k<=K; k++)
+        {
+            move_horse(k);
+            // pr_h_idx();
+            // pr_map();
+        }
+
+        // 턴 증가
+        turn_res++;
+
+       // 종료검사
+        if(turn_res > 1000)
+        {
+            cout<<-1;
+            return;
+        }
+        for(int i=1; i<=N; i++)
+        {
+            for(int j=1; j<=N; j++)
+            {
+                if(H_map[i][j].size() == 4)
+                {
+                    cout<<turn_res;
+                    return;
+                }
+            }
+        }
+
+    }
+
+}
 void input()
 {
     cin>>N>>K;
@@ -71,37 +178,16 @@ void input()
             cin>>map[i][j];
         }
     }
-
     for(int i=1; i<=K; i++)
     {
-        cin>>horses[i].r>>horses[i].c>>horses[i].dir;
-    }
-
-    for(int i=1; i<=K; i++)
-    {
-        map_horse[horses[i].r][horses[i].c].push_back(i);
+        cin>>H[i].r>>H[i].c>>H[i].dir;
+        H_map[H[i].r][H[i].c].push_back(i);
     }
 }
-
-void solve()
-{
-    // while 종료체크에서 나가기 전까지
-
-    // 턴 번호 1 증가
-    cnt++;
-
-
-    for(int i=1; i<=K; i++)
-    {    
-        go_check_hosre(i);  // i번째 말이 이동검사
-    }
-    
-    // 종료 체크
-}
-
 int main()
 {
     input();
+    pr_map();
     solve();
     return 0;
 }
