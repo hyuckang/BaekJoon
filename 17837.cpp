@@ -63,18 +63,24 @@ void move_horse(int idx)
 
     // cout<<idx<<" horse\n";
     // cout<<"cur_r : "<<H[idx].r<<", cur_c : "<<H[idx].c<<"\n";
-    // 맵을 벗어남, 흰색, 빨간색 : return 1
-    // 파란색 return 0
 
-    int cur_r = H[idx].r, cur_c = H[idx].c;
+    int cur_r = H[idx].r, cur_c = H[idx].c, cur_dir = H[idx].dir;
     int nr = cur_r + dr[H[idx].dir];
     int nc = cur_c + dc[H[idx].dir];
+
+    
 
     // 맵을 벗어남
     if(nr <= 0 || nr > N || nc <= 0 || nc >N)
     {
-        H[idx].dir = change_dir(H[idx].dir);
-        return;
+        // 파란색임 방향을 반대로
+        H[idx].dir = change_dir(cur_dir);
+        cur_dir = H[idx].dir;
+        int nnr = cur_r + dr[cur_dir];
+        int nnc = cur_c + dc[cur_dir];
+        if(nnr <= 0 || nnr > N || nnc <= 0 || nnc > N) return;
+        if(map[nnr][nnc] == 2) return;
+        else move_horse(idx);
     }
 
     // idx 번째 말 위의 말들과 함께 움직이기 위함
@@ -124,11 +130,13 @@ void move_horse(int idx)
     // 파란색
     else
     {
-        H[idx].dir = change_dir(H[idx].dir);
-        int nnr = cur_r + dr[H[idx].dir];
-        int nnc = cur_c + dc[H[idx].dir];
+        H[idx].dir = change_dir(cur_dir);
+        cur_dir = H[idx].dir;
+        int nnr = cur_r + dr[cur_dir];
+        int nnc = cur_c + dc[cur_dir];
         if(nnr <= 0 || nnr > N || nnc <= 0 || nnc > N) return;
-        if(map[nnr][nnc] != 2) move_horse(idx);
+        if(map[nnr][nnc] == 2) return;
+        else move_horse(idx);
     }
     return;
 }
@@ -136,13 +144,16 @@ void solve()
 {
     while(true)
     {
+        // cout<<"+_+_+_+_+_+_+_+_+_+_+\n";
         // 말 이동
         for(int k=1; k<=K; k++)
         {
             move_horse(k);
             // pr_h_idx();
+
             // pr_map();
         }
+        // cout<<"+_+_+_+_+_+_+_+_+_+_+\n";
 
         // 턴 증가
         turn_res++;
@@ -153,15 +164,13 @@ void solve()
             cout<<-1;
             return;
         }
-        for(int i=1; i<=N; i++)
+        for(int i=1; i<=K; i++)
         {
-            for(int j=1; j<=N; j++)
+            int h_r = H[i].r, h_c = H[i].c;
+            if(H_map[h_r][h_c].size() == 4)
             {
-                if(H_map[i][j].size() == 4)
-                {
-                    cout<<turn_res;
-                    return;
-                }
+                cout<<turn_res;
+                return;
             }
         }
 
@@ -187,7 +196,7 @@ void input()
 int main()
 {
     input();
-    pr_map();
+    // pr_map();
     solve();
     return 0;
 }
