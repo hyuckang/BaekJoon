@@ -1,43 +1,57 @@
-#include<iostream>
-#include<vector>
-#include<stack>
-#include<queue>
-
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
 using namespace std;
-struct HORSE
+
+struct NODE
 {
-    int r, c, dir;
+    int r, c, dir, idx = 0;
 };
-int N, K, turn_res = 0;
-int map[15][15];
-int dr[] = {0, 0, 0 , -1, 1}, dc[] = {0, 1, -1, 0, 0};
-vector<int> H_map[15][15];
-HORSE H[15];
+int N, K;
+int map[15][15], dr[] = {0, 0, 0, -1, 1}, dc[] = {0, 1, -1, 0, 0};
+NODE H[15];
+vector<int> HM[15][15];
 
-void pr_map()
+void RED(int r, int c, int idx, int nr, int nc)
 {
-    cout<<"=== map ===\n";
-    for(int i=1; i<=N; i++)
+    stack<int> ST;
+    int HM_r_c_sz = HM[r][c].size();
+    for(int i=idx; i<HM_r_c_sz; i++)
     {
-        for(int j=1; j<=N; j++)
-        {
-            cout<<H_map[i][j].size()<<" ";
-        }
-        cout<<"\n";
+        ST.push(HM[r][c].at(i));
+        H[ST.top()].r = nr, H[ST.top()].c = nc;
+        H[ST.top()].idx -= idx;
+    }
+    while(!ST.empty())
+    {
+        HM[r][c].pop_back();
+
+        HM[nr][nc].push_back(ST.top());
+        H[ST.top()].idx -= ST.size();
+        H[ST.top()].idx += HM[nr][nc].size();
+        ST.pop();
     }
 }
-void pr_h_idx()
+void WHITE(int r, int c, int idx, int nr, int nc)
 {
-    cout<<"+++++++++++++++++\n";
-    for(int i=1; i<=K; i++)
+    queue<int> Q;
+    int HM_r_c_sz = HM[r][c].size();
+    for(int i=idx; i<HM_r_c_sz; i++)
     {
-        cout<<H[i].r<<", "<<H[i].c<<", "<<H[i].dir<<"\n";
+        Q.push(HM[r][c].at(i));
+        H[Q.back()].idx -= idx;
+        H[Q.back()].idx += HM[nr][nc].size();
+        H[Q.back()].r = nr, H[Q.back()].c = nc;
     }
-    cout<<"+++++++++++++++++\n";
+    while(!Q.empty())
+    {
+        HM[r][c].pop_back();
+
+        HM[nr][nc].push_back(Q.front());
+        Q.pop();
+    }
 }
-
-
-
 int change_dir(int dir)
 {
     if(dir == 1) return 2;
@@ -45,180 +59,66 @@ int change_dir(int dir)
     else if(dir == 3) return 4;
     else return 3;
 }
-int find_h_idx(int idx, int r, int c)
-{   
-    // idx 번째 말이 h_map[r][c]에서 몇번째에 위치했는지를 retrun
-    int H_idx;
-    int H_map_sz = H_map[r][c].size();
-    for(int i=0; i<H_map_sz; i++)
-    {
-        if(idx == H_map[r][c].at(i))
-        {
-            H_idx = i;
-            break;
-        }
-    }
-    return H_idx;
-}
-
-void move_horse(int idx)
-{
-
-    // cout<<idx<<" horse\n";
-    // cout<<"cur_r : "<<H[idx].r<<", cur_c : "<<H[idx].c<<"\n";
-
-    int cur_r = H[idx].r, cur_c = H[idx].c, cur_dir = H[idx].dir;
-    int nr = cur_r + dr[cur_dir];
-    int nc = cur_c + dc[cur_dir];
-
-    // 맵을 벗어남
-    if(nr <= 0 || nr > N || nc <= 0 || nc > N)
-    {
-        // nr, nc가 맵을 벗어남(파란색임) -> 방향바꿈
-        H[idx].dir = change_dir(cur_dir);
-        cur_dir = H[idx].dir;
-
-        int nnr = cur_r + dr[cur_dir];
-        int nnc = cur_c + dc[cur_dir];
-        // nnr, nnc 도 맵을 벗어남 -> 파란색임 return
-        if(nnr <= 0 || nnr > N || nnc <= 0 || nnc > N) return;
-        // nnr, nnc 가 파란색임 -> return
-        if(map[nnr][nnc] == 2) return;
-        // nnr, nnc가 흰색이거나 빨간색임 -> move_horse
-        else move_horse(idx);
-    }
-
-    // idx 번째 말 위의 말들과 함께 움직이기 위함
-    int H_idx = find_h_idx(idx, cur_r, cur_c);
-    int H_map_sz = H_map[cur_r][cur_c].size();
-    
-    // 흰색
-    if(map[nr][nc] == 0)
-    {
-        stack<int> S;
-        for(int i=H_map_sz-1; i>=H_idx; i--)
-        {
-            int horse_idx = H_map[cur_r][cur_c].at(i);
-            S.push(horse_idx);
-            
-            H[horse_idx].r = nr, H[horse_idx].c = nc;
-            H_map[cur_r][cur_c].pop_back();
-        }
-        while(!S.empty())
-        {
-            H_map[nr][nc].push_back(S.top());
-            S.pop();
-        }
-    }
-    // 빨간색
-    else if(map[nr][nc] == 1)
-    {
-        queue<int> Q;
-        for(int i=H_map_sz-1; i>=H_idx; i--)
-        {
-            int horse_idx = H_map[cur_r][cur_c].at(i);
-            Q.push(horse_idx);
-
-            H[horse_idx].r = nr, H[horse_idx].c = nc;
-            H_map[cur_r][cur_c].pop_back();
-        }
-        while(!Q.empty())
-        {
-            H_map[nr][nc].push_back(Q.front());
-            Q.pop();
-        }
-    }
-    // 파란색
-    else
-    {
-        // map[nr][nc]가 파란색임 -> 방향바꿈
-        H[idx].dir = change_dir(cur_dir);
-        cur_dir = H[idx].dir;
-
-        int nnr = cur_r + dr[cur_dir];
-        int nnc = cur_c + dc[cur_dir];
-        // nnr, nnc 가 맵을 벗어남(파란색임) -> return
-        if(nnr <= 0 || nnr > N || nnc <= 0 || nnc > N) return;
-        // map[nnr][nnc] 가 파란색임 -> return
-        if(map[nnr][nnc] == 2) return;
-        // nnr, nnc가 흰색이거나 빨간색임 -> move_horse
-        else move_horse(idx);
-    }
-    
-    return;
-}
 void solve()
 {
+    int turn = 1;
     while(true)
     {
-        // 말 이동
-        // cout<<"+_+_+_+_+_+_+_+_+_+_+\n";
-        turn_res++;
-
-        for(int k=1; k<=K; k++)
+        if(turn > 1000)
         {
-            move_horse(k);
-            for(int h_idx=1; h_idx<=K; h_idx++)
-            {
-                int h_r = H[h_idx].r, h_c = H[h_idx].c;
-                if(H_map[h_r][h_c].size() >= 4)
-                {
-                    cout<<turn_res;
-                    return;
-                }
-            }
-            // pr_h_idx();
-            // pr_map();
-        }
-        // cout<<"+_+_+_+_+_+_+_+_+_+_+\n";
-        
-        // getchar();
-        // getchar();
-        // getchar();
-
-        // 턴 증가
-        // turn_res++;
-
-        // 종료검사
-        if(turn_res > 1000)
-        {
-            cout<<-1;
+            cout << -1;
             return;
         }
-        /*
-        for(int idx=1; idx<=K; idx++)
+        
+        for(int i=1; i<=K; i++)
         {
-            int h_r = H[idx].r, h_c = H[idx].c;
-            if(H_map[h_r][h_c].size() >= 4)
+            int nr = H[i].r + dr[H[i].dir];
+            int nc = H[i].c + dc[H[i].dir];
+            
+            if(nr < 1 || nr > N || nc < 1 || nc > N || map[nr][nc] == 2)
             {
-                cout<<turn_res;
+                H[i].dir = change_dir(H[i].dir);    
+                nr = H[i].r + dr[H[i].dir];         
+                nc = H[i].c + dc[H[i].dir];
+                if(nr < 1 || nr > N || nc < 1 || nc > N || map[nr][nc] == 2)
+                    continue;
+                else if(map[nr][nc] == 0)
+                    WHITE(H[i].r, H[i].c, H[i].idx, nr, nc);
+                else if(map[nr][nc] == 1)
+                    RED(H[i].r, H[i].c, H[i].idx, nr, nc);
+            } 
+            else if(map[nr][nc] == 0)
+                WHITE(H[i].r, H[i].c, H[i].idx, nr, nc);
+            else if(map[nr][nc] == 1)
+                RED(H[i].r, H[i].c, H[i].idx, nr, nc);
+
+            if(HM[nr][nc].size() >= 4)
+            {
+                cout << turn;
                 return;
             }
         }
-        */
+        turn++;
     }
-
 }
 void input()
 {
-    cin>>N>>K;
-    for(int i=1; i<=N; i++)
-    {
-        for(int j=1; j<=N; j++)
-        {
-            cin>>map[i][j];
-        }
-    }
+    ios::sync_with_stdio(false);
+    cin.tie(0); cout.tie(0);
+
+    cin >> N >> K;
+    for(int r=1; r<=N; r++)
+        for(int c=1; c<=N; c++)
+            cin >> map[r][c];
     for(int i=1; i<=K; i++)
     {
-        cin>>H[i].r>>H[i].c>>H[i].dir;
-        H_map[H[i].r][H[i].c].push_back(i);
+        cin >> H[i].r >> H[i].c >> H[i].dir;
+        HM[H[i].r][H[i].c].push_back(i);
     }
 }
 int main()
 {
     input();
-    // pr_map();
     solve();
     return 0;
 }
