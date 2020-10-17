@@ -1,108 +1,98 @@
-/*
-    1. 물고기 거리 계산 -> bfs
-    2. 먹을 물고기 선택
-    3. 먹고 시간계산, 상어 크기 확인, 상어 위치
-*/
-#include<iostream>
-#include<queue>
-#include<cstring>
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <tuple>
+#include <cstring>
 using namespace std;
 
-int N, shark_r, shark_c, shark_size = 2, shark_eat = 0, res = 0;
+struct NODE{
+	int r, c, size = 2, eat = 0;
+};
+
+int N;
 int map[25][25], vist[25][25];
 int dr[] = {-1, 1, 0, 0}, dc[] = {0, 0, -1, 1};
+NODE shark;
 
-bool is_eat()
-{   
-    // 먹을 물고기가 있다면 먹고 return true, 먹을 물고기가 없다면 return false
-    
-    // 먹을 물고기 찾기
-    int fish_r = -1, fish_c = -1, min_res = 987654321;
-    for(int i=0; i<N; i++)
-    {
-        for(int j=0; j<N; j++)
-        {
-            if(map[i][j] == 0 || vist[i][j] == -1) continue;    
-            if(map[i][j] >= shark_size || vist[i][j] == 0) continue;
-            if(min_res > vist[i][j])
-            {
-                min_res = vist[i][j];
-                fish_r = i;
-                fish_c = j;
-            }
-        }
-    }
-
-    // 물고기 먹기
-    if(fish_r == -1 && fish_c == -1)
-        return false;
-    else
-    {
-        // 시간 게산, 상어 크기 확인
-        res += vist[fish_r][fish_c];
-        shark_eat++;
-        if(shark_size == shark_eat)
-        {
-            shark_size++;
-            shark_eat = 0;
-        }
-
-        // 상어 위치 옮기기
-        map[shark_r][shark_c] = 0;
-        map[fish_r][fish_c] = 9;
-        shark_r = fish_r, shark_c = fish_c;
-
-        return true;
-    }
-
-}
-void bfs()
+vector<tuple<int, int, int>> BFS()
 {
+    vector<tuple<int, int, int>> fishes;
+
     memset(vist, -1, sizeof(vist));
     queue<pair<int, int>> Q;
-    vist[shark_r][shark_c] = 0;
-    Q.push(make_pair(shark_r, shark_c));
+    vist[shark.r][shark.c] = 0;
+    Q.push(make_pair(shark.r, shark.c));
+
     while(!Q.empty())
     {
         pair<int, int> cur = Q.front(); Q.pop();
         for(int dir=0; dir<4; dir++)
         {
-            int nr = cur.first + dr[dir];
-            int nc = cur.second + dc[dir];
-            if(nr < 0 || nr >= N || nc <0 || nc >= N || vist[nr][nc] > -1) continue;
-            if(map[nr][nc] > shark_size) continue;
+            int nr = cur.first + dr[dir], nc = cur.second + dc[dir];
+            if(nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+            if(vist[nr][nc] > -1 || map[nr][nc] > shark.size) continue;
+
             vist[nr][nc] = vist[cur.first][cur.second] + 1;
             Q.push(make_pair(nr, nc));
+            
+            if(0 < map[nr][nc] && map[nr][nc] < shark.size)
+            {
+                fishes.push_back(make_tuple(vist[nr][nc], nr, nc));
+            }    
         }
     }
+    return fishes;
 }
 void solve()
 {
+    int time = 0;
     while(true)
     {
-        bfs();
-        if(!is_eat()) break;
+        vector<tuple<int, int, int>> fishes = BFS();
+        if(fishes.size() == 0) break;
+
+        sort(fishes.begin(), fishes.end());
+        int cost, r, c;
+        tie(cost, r, c) = fishes[0];
+
+        // 시간 계산
+        time += cost;
+
+        // 상어 이동
+        map[shark.r][shark.c] = 0;
+        shark.r = r, shark.c = c;
+        map[shark.r][shark.c] = 9;
+        
+        // 먹은 물고기 갯수 계산
+        shark.eat++;
+        if(shark.size == shark.eat)
+        {
+            shark.size++;
+            shark.eat = 0;
+        }
     }
-    cout<<res;
+    cout << time;
 }
 void input()
 {
-    cin>>N;
-    for(int i=0; i<N; i++)
-    {
-        for(int j=0; j<N; j++)
-        {
-            cin>>map[i][j];
-            if(map[i][j] == 9)
-            {
-                shark_r = i, shark_c = j;
-            }
-        }
-    }
+	ios::sync_with_stdio(false);
+	cin.tie(0);	cout.tie(0);
+	
+    cin >> N;
+	for(int r=0; r<N; r++)
+	{
+		for(int c=0; c<N; c++)
+		{
+			cin >> map[r][c];
+			if (map[r][c] == 9)
+				shark.r = r, shark.c = c;
+		}
+	}
 }
 int main()
 {
-    input();
-    solve();
-    return 0;
+	input();
+	solve();
+	return 0;
 }
