@@ -39,13 +39,12 @@ void solve()
     int Edge_cnt = 0;
     for(int i=0; i<E; i++)
     {
-        // if(Edge_cnt == E - 1) break;
+        if(Edge_cnt == V - 1) break;
 
         long long cost;
         int A, B;
         tie(cost, A, B) = Edge[i];
 
-        // i번째 선택
         if(my_find(A) != my_find(B))
         {
             my_union(A, B);
@@ -57,6 +56,9 @@ void solve()
 }
 void input()
 {
+    ios::sync_with_stdio(false);
+    cin.tie(0); cout.tie(0);
+
     cin >> V >> E;
     for(int i=0; i<E; i++)
     {
