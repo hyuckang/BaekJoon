@@ -39,10 +39,7 @@ void solve()
     int Edge_cnt = 0;
     for(int i=0; i<E; i++)
     {
-        if(Edge_cnt == V - 1) break;
-
-        long long cost;
-        int A, B;
+        int cost, A, B;
         tie(cost, A, B) = Edge[i];
 
         if(my_find(A) != my_find(B))
